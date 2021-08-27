@@ -235,7 +235,7 @@ interface Greetable {
 
 class Person implements Greetable {
     name: string;
-    age: number
+    age: number;
     
     constructor(n: string, a: number){
         this.name = n;
@@ -337,7 +337,7 @@ class Person implements Greetable {
   
   interface User {
       name: string;
-      age: number
+      age: number;
   }
   
   interface User {
@@ -385,3 +385,189 @@ interface InterfaceB {
 interface InterfaceAB extends InterfaceA, InterfaceB;
 ```
 
+### Type Guards
+
+```typescript
+class Foo {
+    
+}
+const f1 = new Foo();
+if(f1 instanceof Foo){
+    //do something
+}
+// instanceof can only work on class not interface
+```
+
+### Discriminated Unions
+
+```typescript
+interface Dog {
+    type: "dog";
+    runningSpeed: number;
+}
+
+interface Bird {
+    type: "bird"
+    flyingSpeed: number;
+}
+
+// Now we can check if an instance has type:"dog" or type:"bird" to tell which interface it belongs to.
+```
+
+### Type Casting
+
+```typescript
+// 1
+const userInputElement = <HTMLInputElement>document.getElementById("user-input");
+const userInput = userInputElement.value;
+
+//2
+const userInputElement = document.getElementById("user-input") as HTMLInputElement;
+const userInput = userInputElement.value;
+```
+
+### Index Properties
+
+```typescript
+interface ErrorContainer {
+    [prop: string]: string
+}
+
+const errorBag: ErrorContainer = {
+    email: "Not a valid email!"
+}
+```
+
+### Function Overload
+
+```typescript
+type Combinable = string | number;
+
+function add(a: Combinable, b: Combinable ){
+    if(typeof a === "string" && typeof b === "string"){
+        return a.toString() + b.toString();
+    }
+    return a + b;
+}
+
+const result = add("Weikun", "Ye");
+// Cannot access "split" even though we know result will be a string
+result.split(' ');
+
+// So we use function overload
+function add(a: number, b: number ): number;
+function add(a: string, b: string ): string;
+function add(a: Combinable, b: Combinable ){
+	//...
+}
+// We tell TS if a is number and b is number, function will return number
+// and if a is string and b is string, function will return string
+```
+
+### Optional Chaining
+
+```typescript
+const user = {
+    name: "xxx",
+    job: {
+        title: "CEO",
+        Company: "xxx"
+    }
+}
+// job property may be optional
+// when we fetch from backend, we don't know if an user have a job
+console.log(user.job?.title)
+```
+
+### Nullish Coalescing
+
+```typescript
+// we get userInput from somewhere (frontend)
+// we don't know what data we get
+const userInput = "xxx";
+const userInput = '';
+const userInput = null;
+const userInput = undefined;
+
+// we want to check if userInput is null or undefined, we store DEFAULT
+// else we store the incoming data
+const storeData = userInput ?? "DEFAULT";
+
+// note: if we use following checking, a empty string '' will be treated as false too.
+// so we cannot store the empty string but "DEFAULT"
+const const storeData = userInput || "DEFAULT";
+```
+
+## Generics
+
+### Generic Functions
+
+```typescript
+function merge(a: object, b: object){
+    return Object.assign(a, b)
+}
+const mergedObj = merge({name: "sss"}, {age: 15});
+// if we access the properties of mergedObj
+// it will return error
+// this will have an error because TS doesn't know name and age are in mergedObj
+console.log(mergedObj.name) 
+
+// Then we need
+function merge<T, U>(a: T, b: U){
+    return Object.assign(a, b)
+}
+// Then we can access mergedObj.name and mergedObj.age 
+```
+
+### Constraints
+
+```typescript
+function merge<T extends object, U extends object>(a: T, b: U){
+    return Object.assign(a, b)
+}
+// also can extends to custom interface
+```
+
+### "typeof" Constraints
+
+```typescript
+// this will give us an error because TS don't know whether there is a key in the obj
+function getValueFromKey (obj: object, key: string){
+    return obj[key];
+}
+// use generics constraints
+function getValueFromKey<T extends obj, U extends keyof T> (obj: T, key: U){
+    return obj[key];
+}
+```
+### Generics Class
+```typescript
+// this will only work for primative types
+class DataStorage<T>{
+    foo(item: T){
+        // do something here
+    }
+}
+
+const stringStorage = new DataStorage<string>();
+```
+### Generic Utility Types
+```typescript
+// Partial
+interface User {
+    name: string;
+    age: number;
+    job: string;
+}
+
+function createUser(name: string, age: number, job: string): User {
+    let user: Partial<User> = {};
+    user.name = name;
+    user.age = age;
+    user.job = job;
+
+    return user as User;
+}
+// Readonly
+const name: Readonly<string[]> = {"Jack", "Wayne"};
+// name.push("Lily") will not work
