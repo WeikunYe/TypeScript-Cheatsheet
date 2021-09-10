@@ -6,7 +6,7 @@
 
 - A JavaScript super set
 - A language building upon JavaScript
-- TypeScript cannot be execute by JavaScript environment like the browser
+- TypeScript cannot be executed by JavaScript environment like the browser
 - TypeScript need to be compiled to JavaScript
 - Identify error earlier before it occurs in the run-time
 
@@ -571,3 +571,125 @@ function createUser(name: string, age: number, job: string): User {
 // Readonly
 const name: Readonly<string[]> = {"Jack", "Wayne"};
 // name.push("Lily") will not work
+```
+## Section 8 Decorators
+### Class Decorators
+```typescript
+function Logger(constructor: Function){
+    console.log("Logging...");
+    console.log(constructor);
+}
+
+@Logger
+class Person {
+    name = "Wayne";
+
+    constructor(){
+        console.log("Creating person...");
+    }
+}
+```
+### Decorator Factories
+```typescript
+function Logger(logString: string){
+    return function(constructor: Function){
+        console.log(logString);
+        console.log(constructor);
+    }
+}
+
+@Logger('LOGGING - PERSON')
+class Person {
+    name = "Wayne";
+
+    constructor(){
+        console.log("Creating person...");
+    }
+}
+```
+### Multiple Decorators
+- Bottom up
+- Decorator factories run first
+
+## Modules & Namespaces
+## Using Webpack with Typescript
+### What is Webpack and Why we need it?
+- It is a bundling and "build orchestration" tool
+- Code bundles, less imports required
+- Optimized (minified) code, less code to download
+- More build steps can be added easily
+### Install and config Webpack
+```bash
+yarn add webpack webpack-cli webpack-dev-server typescript ts-loader -D
+```
+```javascript
+//webpack.config.js
+const path = require('path');
+module.exports = {
+    mode: 'development',
+    entry: './src/app.ts',
+    output: {
+        filename: 'bundle.js',
+        path: path.resolve(__dirname, 'dist'),
+        publicPath: 'dist',
+    },
+    devtool: 'inline-source-map',
+    module: {
+        rules: [
+            {
+                test: /\.ts&/,
+                use: 'ts-loader',
+                exclude: /node_modules/
+            }
+        ]
+    },
+    resolve: {
+        extensions: ['.ts', '.js']
+    }
+}
+```
+```json
+{
+    "build": "webpack",
+    "start": "webpack-dev-server",
+
+}
+```
+### Adding production workflow
+```bash
+yarn add -D clean-webpack-plugin
+```
+```javascript
+//webpack.config.prod.js
+const path = require('path');
+const CleanPlugin = require('clean-webpack-plugin');
+module.exports = {
+    mode: 'production',
+    entry: './src/app.ts',
+    output: {
+        filename: 'bundle.js',
+        path: path.resolve(__dirname, 'dist')
+    },
+    devtool: 'none',
+    module: {
+        rules: [
+            {
+                test: /\.ts&/,
+                use: 'ts-loader',
+                exclude: /node_modules/
+            }
+        ]
+    },
+    resolve: {
+        extensions: ['.ts', '.js']
+    },
+    plugins: [
+        new.CleanPlugin.CleanWebpackPlugin()
+    ]
+}
+```
+```json
+{
+    "build": "webpack --config webpack.config.prod.js"
+}
+```
